@@ -18,6 +18,9 @@ app.use(
     secret: "hi hello",
     resave: false,
     saveUninitialized: false,
+    cookie: {
+      maxAge: 1000 * 60 * 60 * 24 * 7,
+    },
   })
 );
 
@@ -39,7 +42,7 @@ const register = async (req, res, next) => {
     } else {
       const hash = await bcrypt.hash(password, saltRounds);
       const result = await db.query(
-        "INSERT INTO users (email, password) VALUES ($1, $2) RETURNING *",
+        "INSERT INTO users (email, paswd) VALUES ($1, $2) RETURNING *",
         [email, hash]
       );
       const user = result.rows[0];
@@ -57,12 +60,19 @@ const register = async (req, res, next) => {
   }
 };
 
+const secrets = (req, res) => {
+  if (req.isAuthenticated()) {
+    res.render("secrets.ejs");
+  } else {
+    res.redirect("/users/login");
+  }
+};
+
 // Define the login function
 const login = passport.authenticate("local", {
-  successRedirect: "/secrets",
-  failureRedirect: "/login",
+  successRedirect: "/users/secrets",
+  failureRedirect: "/users/login",
 });
-
 // Configure passport authentication strategy
 passport.use(
   new Strategy(async function verify(username, password, cb) {
@@ -72,7 +82,7 @@ passport.use(
       ]);
       if (result.rows.length > 0) {
         const user = result.rows[0];
-        const storedHashedPassword = user.password;
+        const storedHashedPassword = user.paswd;
         const match = await bcrypt.compare(password, storedHashedPassword);
         if (match) {
           return cb(null, user);
@@ -103,7 +113,4 @@ passport.deserializeUser(async (id, cb) => {
   }
 });
 
-export {
-    register,
-    login,
-}
+export { register, login, secrets };
