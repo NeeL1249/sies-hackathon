@@ -1,7 +1,32 @@
 // user.routes.js
 import express from "express";
-import { register, login,secrets } from "../controller/user.controller.js";
+import {
+  register,
+  initialize,
+  secrets,
+} from "../controller/user.controller.js";
 import passport from "passport";
+import session from "express-session";
+import env from "dotenv";
+
+const app = express();
+
+env.config();
+
+app.use(
+  session({
+    secret: process.env.SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      maxAge: 1000 * 60 * 60 * 24,
+    },
+  })
+);
+
+app.use(passport.initialize());
+app.use(passport.session());
+
 
 const router = express.Router();
 
@@ -15,13 +40,15 @@ router.get("/login", (req, res) => {
   res.render("login.ejs");
 });
 router.post("/register", register);
+
 router.post(
-  "/login",login,
+  "/login",
   passport.authenticate("local", {
-    successRedirect: "/users/secrets",
-    failureRedirect: "/users/login",
+    successRedirect: "/users/login",
+    failureRedirect: "/users/secrets",
   })
 );
-router.get("/secrets",secrets);
+
+router.get("/secrets", secrets);
 
 export default router;
