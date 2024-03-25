@@ -1,19 +1,15 @@
 import userRoutes from "./routes/user.routes.js";
 import express from "express";
+import session from "express-session";
 
 const port = 3000;
 const app = express();
 
-// app.use(
-//   session({
-//     secret: "hi hello",
-//     resave: false,
-//     saveUninitialized: false,
-//     cookie: {
-//       maxAge: 1000 * 60 * 60 * 24 * 7,
-//     },
-//   })
-// );
+app.use(session({
+  secret: 'your-secret-key',
+  resave: false,
+  saveUninitialized: true
+}));
 
 app.use("/api/users", userRoutes);
 

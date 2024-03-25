@@ -1,9 +1,11 @@
 import bcrypt from "bcrypt";
 import db from "../database/db.js";
 import express from "express";
+import session from "express-session";
 
 const app = express();
 const saltRounds = 10;
+
 
 const register = async (req, res, next) => {
   const email = req.body.username;
@@ -42,10 +44,6 @@ const register = async (req, res, next) => {
   }
 };
 
-const secrets = (req, res) => {
-  res.render("secrets.ejs");
-};
-
 const login = async (req, res, cb) => {
   const email = req.body.username;
   const password = req.body.password;
@@ -65,6 +63,8 @@ const login = async (req, res, cb) => {
         } else {
           if (result) {
             console.log(`user successfully logged in`);
+            req.session.user = user;
+            res.redirect("/api/users/secrets");
             cb();
           } else {
             res.send("Incorrect Password");
@@ -74,6 +74,14 @@ const login = async (req, res, cb) => {
     }
   } catch (error) {
     console.log(error);
+  }
+};
+
+const secrets = (req, res) => {
+  if (req.session.user) {
+    res.render("secrets.ejs");
+  } else {
+    res.redirect("/api/users/login");
   }
 };
 

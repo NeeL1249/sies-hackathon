@@ -7,7 +7,7 @@ const router = Router();
 
 router.use(express.urlencoded({ extended: true }));
 
-router.get("/secrets",secrets)
+router.get("/secrets", secrets);
 router.get("/login", (req,res)=> {
     res.render("login.ejs")
 })
