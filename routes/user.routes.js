@@ -1,54 +1,19 @@
-// user.routes.js
+import db from "../database/db.js";
+import { Router} from "express";
 import express from "express";
-import {
-  register,
-  initialize,
-  secrets,
-} from "../controller/user.controller.js";
-import passport from "passport";
-import session from "express-session";
-import env from "dotenv";
+import {login, register, secrets} from "../controller/user.controller.js"
 
-const app = express();
+const router = Router();
 
-env.config();
+router.use(express.urlencoded({ extended: true }));
 
-app.use(
-  session({
-    secret: process.env.SECRET,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      maxAge: 1000 * 60 * 60 * 24,
-    },
-  })
-);
+router.get("/secrets",secrets)
+router.get("/login", (req,res)=> {
+    res.render("login.ejs")
+})
+router.post("/login", login)
+router.post("/register", register)
 
-app.use(passport.initialize());
-app.use(passport.session());
-
-
-const router = express.Router();
-
-router.get("/", (req, res) => {
-  res.render("index.ejs");
-});
-router.get("/register", (req, res) => {
-  res.render("register.ejs");
-});
-router.get("/login", (req, res) => {
-  res.render("login.ejs");
-});
-router.post("/register", register);
-
-router.post(
-  "/login",
-  passport.authenticate("local", {
-    successRedirect: "/users/login",
-    failureRedirect: "/users/secrets",
-  })
-);
-
-router.get("/secrets", secrets);
+db.connect();
 
 export default router;
